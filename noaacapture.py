@@ -6,10 +6,10 @@ import subprocess
 import os
 
 # Satellite names in TLE plus their frequency
-satellites = ['NOAA-18','NOAA-15','NOAA-19']
+satellites = ['NOAA 18 [B]','NOAA 15 [B]','NOAA 19 [+]']
 freqs = [137912500, 137620000, 137100000]
 # Dongle gain
-dongleGain='40'
+dongleGain='50'
 #
 # Dongle PPM shift, hopefully this will change to reflect different PPM on freq
 dongleShift='-3'
@@ -49,7 +49,7 @@ wxAddOverlay='yes'
 wxEnhHVC='no'
 wxEnhHVCT='yes'
 wxEnhMSA='yes'
-wxEnhMCIR='yes'
+wxEnhMCIR='no'
 # Other tunables
 wxQuietOutput='no'
 wxDecodeAll='yes'
@@ -107,24 +107,23 @@ def recordFM(freq, fname, duration, xfname):
     cmdline = ['rtl_fm',\
 		'-f',str(freq),\
 		'-s',sample,\
-		'-g',dongleGain,\
+		#'-g',dongleGain,\
 		'-F','9',\
 		#'-A','fast',\
 		#'-o','4',\
 		'-E','deemp',\
-        #'-E', 'wav'\
+        '-E', 'wav',\
 		#'-E','offset',\
 		'-p',dongleShift,\
 		recdir+'/'+fname+'.raw']
-        #'| play -r 11.025k -t raw -e s -b 16 -c 1 -V1 -']
     runForDuration(cmdline, duration)
 
 def transcode(fname):
     print 'Transcoding...'
-    cmdline = ['sox','-t','raw','-r',sample,'-es','-b','16','-c','1','-V1',recdir+'/'+fname+'.raw',recdir+'/'+fname+'.wav','rate',wavrate]
+    cmdline = ['sox','-t','wav','-es','-b','16','-c','1','-V1',recdir+'/'+fname+'.raw',recdir+'/'+fname+'.wav','rate',wavrate]
     subprocess.call(cmdline)
     #if removeRAW in ('yes', 'y', '1'):
-    #os.remove(recdir+'/'+fname+'.raw')
+    os.remove(recdir+'/'+fname+'.raw')
 
 def doppler(fname,emergeTime):
     cmdline = ['doppler', 
@@ -169,6 +168,8 @@ def decode(fname,aosTime,satName):
 	    subprocess.call(cmdline_hvct)
 	if wxEnhMSA in ('yes', 'y', '1'):
 	    print 'Creating MSA image'
+	    cmdline_msa_prep = [ wxInstallDir+'/wxtoimg',wxQuietOpt,wxDecodeOpt,wxAddText,'-Q '+wxJPEGQuality,'-e','MSA-precip','-m',mapDir+'/'+fname+'-map.png',recdir+'/'+fname+'.wav',imgdir+'/'+satName+'/'+fileNameC+'-msa_prep.jpg']
+	    subprocess.call(cmdline_msa_prep)
 	    cmdline_msa = [ wxInstallDir+'/wxtoimg',wxQuietOpt,wxDecodeOpt,wxAddText,'-Q '+wxJPEGQuality,'-e','MSA-precip','-m',mapDir+'/'+fname+'-map.png',recdir+'/'+fname+'.wav',imgdir+'/'+satName+'/'+fileNameC+'-msa.jpg']
 	    subprocess.call(cmdline_msa)
 	if wxEnhMCIR in ('yes', 'y', '1'):
