@@ -6,19 +6,19 @@ import subprocess
 import os
 
 # Satellite names in TLE plus their frequency
-satellites = ['NOAA 18','NOAA 15','NOAA 19']
+satellites = ['NOAA-18','NOAA-15','NOAA-19']
 freqs = [137912500, 137620000, 137100000]
 # Dongle gain
-dongleGain='50'
+dongleGain='40'
 #
 # Dongle PPM shift, hopefully this will change to reflect different PPM on freq
-dongleShift='52'
+dongleShift='-3'
 #
 # Dongle index, is there any rtl_fm allowing passing serial of dongle? Unused right now
 dongleIndex='0'
 #
 # Sample rate, width of recorded signal - should include few kHz for doppler shift
-sample ='41000'
+sample ='60000'
 # Sample rate of the wav file. Shouldn't be changed
 wavrate='11025'
 #
@@ -29,38 +29,38 @@ removeRAW='yes'
 wxInstallDir='/usr/local/bin'
 # Recording dir, used for RAW and WAV files
 #
-recdir='/opt/wxsat/rec'
+recdir='/home/pi/wxtoimg/audio'
 #
 # Spectrogram directory, this would be optional in the future
 #
-specdir='/opt/wxsat/spectro'
+specdir='/home/pi/wxtoimg/spectro'
 #  
 # Output image directory
 #
-imgdir='/opt/wxsat/img'
+imgdir='/home/pi/wxtoimg/img'
 #
 # Map file directory
 #
-mapDir='/opt/wxsat/maps'
+mapDir='/home/pi/wxtoimg/maps'
 # Options for wxtoimg
 # Create map overlay?
-wxAddOverlay='no'
+wxAddOverlay='yes'
 # Image outputs
 wxEnhHVC='no'
 wxEnhHVCT='yes'
-wxEnhMSA='no'
+wxEnhMSA='yes'
 wxEnhMCIR='yes'
 # Other tunables
 wxQuietOutput='no'
 wxDecodeAll='yes'
-wxJPEGQuality='75'
+wxJPEGQuality='100'
 # Adding overlay text
-wxAddTextOverlay='no'
-wxOverlayText='text'
+wxAddTextOverlay='yes'
+wxOverlayText=''
 #
 # Various options
 # Should this script create spectrogram : yes/no
-createSpectro='yes'
+createSpectro='no'
 # Use doppler shift for correction, not used right now - leave as is
 runDoppler='no'
 
@@ -109,20 +109,22 @@ def recordFM(freq, fname, duration, xfname):
 		'-s',sample,\
 		'-g',dongleGain,\
 		'-F','9',\
-		'-A','fast',\
-		'-E','dc',\
-		'-E','offset',\
+		#'-A','fast',\
+		#'-o','4',\
+		'-E','deemp',\
+        #'-E', 'wav'\
+		#'-E','offset',\
 		'-p',dongleShift,\
-		recdir+'/'+fname+'.raw' ]
-
+		recdir+'/'+fname+'.raw']
+        #'| play -r 11.025k -t raw -e s -b 16 -c 1 -V1 -']
     runForDuration(cmdline, duration)
 
 def transcode(fname):
     print 'Transcoding...'
     cmdline = ['sox','-t','raw','-r',sample,'-es','-b','16','-c','1','-V1',recdir+'/'+fname+'.raw',recdir+'/'+fname+'.wav','rate',wavrate]
     subprocess.call(cmdline)
-    if removeRAW in ('yes', 'y', '1'):
-	os.remove(recdir+'/'+fname+'.raw')
+    #if removeRAW in ('yes', 'y', '1'):
+    #os.remove(recdir+'/'+fname+'.raw')
 
 def doppler(fname,emergeTime):
     cmdline = ['doppler', 
@@ -150,6 +152,7 @@ def createoverlay(fname,aosTime,satName):
 def decode(fname,aosTime,satName):
     satTimestamp = int(fname)
     fileNameC = datetime.datetime.fromtimestamp(satTimestamp).strftime('%Y%m%d-%H%M')
+    wxAddText='-k '+strftime("%Y-%m-%d_%H%M%S")
     if wxAddOverlay in ('yes', 'y', '1'):
 	print 'Creating basic image with overlay'
 	createoverlay(fname,aosTime,satName)
@@ -166,7 +169,7 @@ def decode(fname,aosTime,satName):
 	    subprocess.call(cmdline_hvct)
 	if wxEnhMSA in ('yes', 'y', '1'):
 	    print 'Creating MSA image'
-	    cmdline_msa = [ wxInstallDir+'/wxtoimg',wxQuietOpt,wxDecodeOpt,wxAddText,'-Q '+wxJPEGQuality,'-e','MSA','-m',mapDir+'/'+fname+'-map.png',recdir+'/'+fname+'.wav',imgdir+'/'+satName+'/'+fileNameC+'-msa.jpg']
+	    cmdline_msa = [ wxInstallDir+'/wxtoimg',wxQuietOpt,wxDecodeOpt,wxAddText,'-Q '+wxJPEGQuality,'-e','MSA-precip','-m',mapDir+'/'+fname+'-map.png',recdir+'/'+fname+'.wav',imgdir+'/'+satName+'/'+fileNameC+'-msa.jpg']
 	    subprocess.call(cmdline_msa)
 	if wxEnhMCIR in ('yes', 'y', '1'):
 	    print 'Creating MCIR image'
