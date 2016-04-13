@@ -112,7 +112,7 @@ def recordFM(freq, fname, duration, xfname):
 		#'-A','fast',\
 		#'-o','4',\
 		'-E','deemp',\
-        '-E', 'wav',\
+        	'-E', 'wav',\
 		#'-E','offset',\
 		'-p',dongleShift,\
 		recdir+'/'+fname+'.raw']
