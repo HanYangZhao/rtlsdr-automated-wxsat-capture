@@ -9,7 +9,7 @@ import numpy
 #Heavily modified by kols - original by HanYangZhao/dr. Paul Brewer
 
 #First, let's set the minimum elevation
-min_elev = 20
+min_elev = 45 
 
 class missingSatellitePredictionError(Exception):
     def __init__(self):

@@ -9,7 +9,7 @@ import os
 satellites = ['NOAA 18 [B]','NOAA 15 [B]','NOAA 19 [+]']
 freqs = [137912500, 137620000, 137100000]
 # Dongle gain
-dongleGain='10'
+dongleGain='8'
 #
 # Dongle PPM shift, hopefully this will change to reflect different PPM on freq
 dongleShift='-3'
@@ -52,7 +52,7 @@ wxEnhMSA='yes'
 wxEnhMCIR='no'
 # Other tunables
 wxQuietOutput='no'
-wxDecodeAll='yes'
+wxDecodeAll='no'
 wxJPEGQuality='100'
 # Adding overlay text
 wxAddTextOverlay='yes'
@@ -109,7 +109,7 @@ def recordFM(freq, fname, duration, xfname):
 		'-s',sample,\
 		'-g',dongleGain,\
 		'-F','9',\
-		'-A','fast',\
+		#'-A','fast',\
 		'-o','1',\
 		'-E','deemp',\
         	'-E', 'wav',\
@@ -154,9 +154,9 @@ def decode(fname,aosTime,satName):
     if wxAddOverlay in ('yes', 'y', '1'):
 	print 'Creating basic image with overlay'
 	createoverlay(fname,aosTime,satName)
-	#cmdline = [ wxInstallDir+'/wxtoimg',wxQuietOpt,wxDecodeOpt,wxAddText,'-c','-Q '+wxJPEGQuality,'-m', mapDir+'/'+fname+'-map.png',recdir+'/'+fname+'.wav',imgdir+'/'+satName+'/'+fileNameC+'-normal.jpg']
-	#print cmdline
-	#subprocess.call(cmdline)
+	cmdline = [ wxInstallDir+'/wxtoimg',wxQuietOpt,wxDecodeOpt,wxAddText,'-c','-Q '+wxJPEGQuality,'-m', mapDir+'/'+fname+'-map.png',recdir+'/'+fname+'.wav',imgdir+'/'+satName+'/'+fileNameC+'-normal.jpg']
+	print cmdline
+	subprocess.call(cmdline)
 	if wxEnhHVC in ('yes', 'y', '1'):
 	    print 'Creating HVC image'
 	    cmdline_hvc = [ wxInstallDir+'/wxtoimg',wxQuietOpt,wxDecodeOpt,wxAddText,'-c','-Q '+wxJPEGQuality,'-e','HVC','-m',mapDir+'/'+fname+'-map.png',recdir+'/'+fname+'.wav', imgdir+'/'+satName+'/'+fileNameC+'-hvc.jpg']
